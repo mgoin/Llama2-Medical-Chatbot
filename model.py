@@ -2,7 +2,7 @@ from langchain.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain import PromptTemplate
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
-from langchain.llms import CTransformers
+from deepsparse_llm import DeepSparse
 from langchain.chains import RetrievalQA
 import chainlit as cl
 
@@ -39,11 +39,9 @@ def retrieval_qa_chain(llm, prompt, db):
 #Loading the model
 def load_llm():
     # Load the locally downloaded model here
-    llm = CTransformers(
-        model = "llama-2-7b-chat.ggmlv3.q8_0.bin",
-        model_type="llama",
-        max_new_tokens = 512,
-        temperature = 0.5
+    llm = DeepSparse(
+        model = "sparsezoo_stub_or_model_directory",
+        config={"max_generated_tokens": 512, "sampling_temperature": 0.5}
     )
     return llm
 

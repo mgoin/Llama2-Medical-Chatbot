@@ -4,6 +4,8 @@ torch
 accelerate
 bitsandbytes
 transformers
+datasets
 sentence_transformers
 faiss_cpu
 chainlit
+deepsparse-nightly
