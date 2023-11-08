@@ -2,6 +2,7 @@ from langchain.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain import PromptTemplate
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
+from langchain.llms import DeepSparse
 from langchain.chains import RetrievalQA
 import chainlit as cl
 
