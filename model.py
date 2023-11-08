@@ -2,7 +2,6 @@ from langchain.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain import PromptTemplate
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
-from deepsparse_llm import DeepSparse
 from langchain.chains import RetrievalQA
 import chainlit as cl
 
@@ -40,8 +39,9 @@ def retrieval_qa_chain(llm, prompt, db):
 def load_llm():
     # Load the locally downloaded model here
     llm = DeepSparse(
-        model = "sparsezoo_stub_or_model_directory",
-        config={"max_generated_tokens": 512, "sampling_temperature": 0.5}
+        model = "hf:neuralmagic/mpt-7b-chat-pruned50-quant",
+        generation_config={"max_new_tokens": 300},
+        model_config  = {"sequence_length": 2048, "trust_remote_code": True}
     )
     return llm
 
