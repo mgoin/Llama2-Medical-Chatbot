@@ -5,7 +5,7 @@ from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 import chainlit as cl
 
-DB_FAISS_PATH = 'vectorstore/db_faiss'
+DB_FAISS_PATH = "vectorstore/db_faiss"
 
 custom_prompt_template = """Use the following pieces of information to answer the user's question.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -17,38 +17,46 @@ Only return the helpful answer below and nothing else.
 Helpful answer:
 """
 
+
 def set_custom_prompt():
     """
     Prompt template for QA retrieval for each vectorstore
     """
-    prompt = PromptTemplate(template=custom_prompt_template,
-                            input_variables=['context', 'question'])
+    prompt = PromptTemplate(
+        template=custom_prompt_template, input_variables=["context", "question"]
+    )
     return prompt
 
-#Retrieval QA Chain
+
+# Retrieval QA Chain
 def retrieval_qa_chain(llm, prompt, db):
-    qa_chain = RetrievalQA.from_chain_type(llm=llm,
-                                       chain_type='stuff',
-                                       retriever=db.as_retriever(search_kwargs={'k': 2}),
-                                       return_source_documents=True,
-                                       chain_type_kwargs={'prompt': prompt}
-                                       )
+    qa_chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type="stuff",
+        retriever=db.as_retriever(search_kwargs={"k": 2}),
+        return_source_documents=True,
+        chain_type_kwargs={"prompt": prompt},
+    )
     return qa_chain
 
-#Loading the model
+
+# Loading the model
 def load_llm():
     # Load the locally downloaded model here
     llm = DeepSparse(
-        model = "hf:neuralmagic/mpt-7b-chat-pruned50-quant",
+        model="hf:neuralmagic/mpt-7b-chat-pruned50-quant",
         generation_config={"max_new_tokens": 300},
-        model_config  = {"sequence_length": 2048, "trust_remote_code": True}
+        model_config={"sequence_length": 2048, "trust_remote_code": True},
     )
     return llm
 
-#QA Model Function
+
+# QA Model Function
 def qa_bot():
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2",
-                                       model_kwargs={'device': 'cpu'})
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={"device": "cpu"},
+    )
     db = FAISS.load_local(DB_FAISS_PATH, embeddings)
     llm = load_llm()
     qa_prompt = set_custom_prompt()
@@ -56,13 +64,15 @@ def qa_bot():
 
     return qa
 
-#output function
+
+# output function
 def final_result(query):
     qa_result = qa_bot()
-    response = qa_result({'query': query})
+    response = qa_result({"query": query})
     return response
 
-#chainlit code
+
+# chainlit code
 @cl.on_chat_start
 async def start():
     chain = qa_bot()
@@ -73,9 +83,10 @@ async def start():
 
     cl.user_session.set("chain", chain)
 
+
 @cl.on_message
 async def main(message):
-    chain = cl.user_session.get("chain") 
+    chain = cl.user_session.get("chain")
     cb = cl.AsyncLangchainCallbackHandler(
         stream_final_answer=True, answer_prefix_tokens=["FINAL", "ANSWER"]
     )
@@ -90,4 +101,3 @@ async def main(message):
         answer += "\nNo sources found"
 
     await cl.Message(content=answer).send()
-
