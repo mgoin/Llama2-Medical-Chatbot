@@ -2,9 +2,9 @@ from langchain.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain import PromptTemplate
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
-from langchain.llms import DeepSparse
 from langchain.chains import RetrievalQA
 import chainlit as cl
+from langchain.llms import DeepSparse
 
 DB_FAISS_PATH = "vectorstore/db_faiss"
 
@@ -17,6 +17,20 @@ Question: {question}
 Only return the helpful answer below and nothing else.
 Helpful answer:
 """
+
+
+# Loading the model
+def load_llm():
+    # Load the locally downloaded model here
+    llm = DeepSparse(
+        model="hf:neuralmagic/mpt-7b-chat-pruned50-quant",
+        generation_config={"max_new_tokens": 300},
+        model_config={"sequence_length": 2048, "trust_remote_code": True},
+    )
+    return llm
+
+
+llm = load_llm()
 
 
 def set_custom_prompt():
@@ -41,17 +55,6 @@ def retrieval_qa_chain(llm, prompt, db):
     return qa_chain
 
 
-# Loading the model
-def load_llm():
-    # Load the locally downloaded model here
-    llm = DeepSparse(
-        model="hf:neuralmagic/mpt-7b-chat-pruned50-quant",
-        generation_config={"max_new_tokens": 300},
-        model_config={"sequence_length": 2048, "trust_remote_code": True},
-    )
-    return llm
-
-
 # QA Model Function
 def qa_bot():
     embeddings = HuggingFaceEmbeddings(
@@ -59,7 +62,6 @@ def qa_bot():
         model_kwargs={"device": "cpu"},
     )
     db = FAISS.load_local(DB_FAISS_PATH, embeddings)
-    llm = load_llm()
     qa_prompt = set_custom_prompt()
     qa = retrieval_qa_chain(llm, qa_prompt, db)
 
@@ -86,13 +88,13 @@ async def start():
 
 
 @cl.on_message
-async def main(message):
+async def main(message: cl.Message):
     chain = cl.user_session.get("chain")
     cb = cl.AsyncLangchainCallbackHandler(
         stream_final_answer=True, answer_prefix_tokens=["FINAL", "ANSWER"]
     )
     cb.answer_reached = True
-    res = await chain.acall(message, callbacks=[cb])
+    res = await chain.acall(message.content, callbacks=[cb])
     answer = res["result"]
     sources = res["source_documents"]
 
