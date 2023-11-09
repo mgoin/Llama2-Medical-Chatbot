@@ -8,4 +8,4 @@ datasets
 sentence_transformers
 faiss_cpu
 chainlit
-deepsparse-nightly
+deepsparse-nightly[llm]
