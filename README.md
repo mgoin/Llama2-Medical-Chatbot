@@ -10,7 +10,7 @@ pip install -r requrements.txt
 ## Start with Chainlit
 
 ```bash
-chainlit run model.py -w
+MODEL_PATH="hf:neuralmagic/mpt-7b-chat-pruned50-quant" chainlit run model.py -w
 ```
 
 <img width="1350" alt="Screenshot 2023-08-13 at 7 12 54 PM" src="https://github.com/mgoin/MPT-Medical-Chatbot/assets/3195154/6841439d-0f27-42d6-af15-65a36e2f0a87">
