@@ -7,7 +7,8 @@ import chainlit as cl
 from langchain.llms import DeepSparse
 import os
 
-MODEL_PATH = os.environ.get("MODEL_PATH")
+MODEL_PATH = os.environ.get("MODEL_PATH") or "hf:neuralmagic/mpt-7b-chat-pruned50-quant"
+
 DB_FAISS_PATH = "vectorstore/db_faiss"
 
 custom_prompt_template = """Use the following pieces of information to answer the user's question.
@@ -26,8 +27,8 @@ def load_llm():
     # Load the locally downloaded model here
     llm = DeepSparse(
         model=MODEL_PATH,
-        generation_config={"max_new_tokens": 300},
         model_config={"sequence_length": 2048, "trust_remote_code": True},
+        generation_config={"max_new_tokens": 300},
     )
     return llm
 
